@@ -1,0 +1,21 @@
+0.1.0001.0:
+
+Project setup
+
+Implemented:
+
+BackgroundScroller
+CameraHolder
+CameraShaker
+AuxMath
+SceneLoader
+ISavable
+SavableData
+SavableEntity
+SavableEntityEditor
+SavingSystem
+SavingStartupEventArgs
+SceneInstance
+HiddenSceneInstance
+GlobalInstance
+HiddenGlobalInstance
