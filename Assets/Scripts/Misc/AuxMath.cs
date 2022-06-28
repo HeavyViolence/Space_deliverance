@@ -11,6 +11,10 @@ public static class AuxMath
 
     public static bool RandomBool => RandomSign > 0f;
 
+    public static int EnsurePositiveValue(int value) => Mathf.Clamp(value, 0, int.MaxValue);
+
+    public static float EnsurePositiveValue(float value) => Mathf.Clamp(value, 0f, float.MaxValue);
+
     public static float RangeRemap(float value, float oldMin, float oldMax, float newMin, float newMax)
     {
         float clampedValue = Mathf.Clamp(value, oldMin, oldMax);

@@ -35,7 +35,12 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
         TryLoad();
     }
 
-    private IEnumerator Start()
+    private void Start()
+    {
+        StartCoroutine(SavePeriodically());
+    }
+
+    private IEnumerator SavePeriodically()
     {
         while (true)
         {

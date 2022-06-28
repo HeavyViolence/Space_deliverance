@@ -19,3 +19,12 @@ SceneInstance
 HiddenSceneInstance
 GlobalInstance
 HiddenGlobalInstance
+
+0.1.0002.0:
+
+Implemented:
+
+Dustfield
+DustfieldSwitch
+RangedInt
+RangedFloat

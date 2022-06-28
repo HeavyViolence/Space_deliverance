@@ -18,7 +18,12 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
         FindSavableComponents();
     }
 
-    private IEnumerator Start()
+    private void Start()
+    {
+        StartCoroutine(RegisterItself());
+    }
+
+    private IEnumerator RegisterItself()
     {
         yield return SavingSystem.Instance != null;
 
