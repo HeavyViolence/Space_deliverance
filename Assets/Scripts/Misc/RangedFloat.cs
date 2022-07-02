@@ -8,11 +8,12 @@ public sealed class RangedFloat : IEquatable<RangedFloat>, IComparable<RangedFlo
     private float LowestRangeValue => PivotValue - RangeValue;
     private float HighestRangeValue => PivotValue + RangeValue;
 
+    public static RangedFloat Zero => new(0f, 0f, 0f, 0f);
     public float PivotValue { get; }
     public float RangeValue { get; }
     public float MinValue => LowestRangeValue < _min ? _min : LowestRangeValue;
     public float MaxValue => HighestRangeValue > _max ? _max : HighestRangeValue;
-    public float RandomValue => UnityEngine.Random.Range(MinValue, MaxValue + 1);
+    public float RandomValue => UnityEngine.Random.Range(MinValue, MaxValue);
 
     public RangedFloat(float pivotValue, float rangeValue, float minValue = float.MinValue, float maxValue = float.MaxValue)
     {
@@ -20,7 +21,7 @@ public sealed class RangedFloat : IEquatable<RangedFloat>, IComparable<RangedFlo
         _max = maxValue;
 
         PivotValue = pivotValue;
-        RangeValue = AuxMath.EnsurePositiveValue(rangeValue);
+        RangeValue = Math.Abs(rangeValue);
     }
 
     public bool Equals(RangedFloat other)

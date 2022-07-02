@@ -8,6 +8,7 @@ public sealed class RangedInt : IEquatable<RangedInt>, IComparable<RangedInt>, I
     private int LowestRangeValue => PivotValue - RangeValue;
     private int HighestRangeValue => PivotValue + RangeValue;
 
+    public static RangedInt Zero => new(0, 0, 0, 0);
     public int PivotValue { get; }
     public int RangeValue { get; }
     public int MinValue => LowestRangeValue < _min ? _min : LowestRangeValue;
@@ -20,7 +21,7 @@ public sealed class RangedInt : IEquatable<RangedInt>, IComparable<RangedInt>, I
         _max = maxValue;
 
         PivotValue = pivotValue;
-        RangeValue = AuxMath.EnsurePositiveValue(rangeValue);
+        RangeValue = Math.Abs(rangeValue);
     }
 
     public bool Equals(RangedInt other)

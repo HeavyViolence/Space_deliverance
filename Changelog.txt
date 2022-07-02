@@ -28,3 +28,17 @@ Dustfield
 DustfieldSwitch
 RangedInt
 RangedFloat
+
+0.1.0003.0:
+
+Implemented:
+
+Space background changes based on currently active scene
+MovementConfig
+MovementConfigEditor
+RangedFloat functionality expanded
+RangedInt functionality expanded
+
+Bug fixes:
+
+RangedFloat random value may exceed its max value up to 1
