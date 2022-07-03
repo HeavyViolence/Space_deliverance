@@ -42,3 +42,28 @@ RangedInt functionality expanded
 Bug fixes:
 
 RangedFloat random value may exceed its max value up to 1
+
+0.1.0004.0:
+
+Implemented:
+
+Audio mixer
+AudioAccess
+AudioProperties
+AudioCollection
+AudioCollectionEditor
+AudioPlayer
+AudioPlayerSavableData
+
+Improvements:
+
+Improved performance of MovementConfig.Speed2D
+Improved performance of SavingSystem
+
+Bug fixes:
+
+SavingSystem.Deregister() cannot record a newly captured state of a SavableEntity if there already is a previously captured state stored
+
+Functionality expanded:
+
+MovementConfig

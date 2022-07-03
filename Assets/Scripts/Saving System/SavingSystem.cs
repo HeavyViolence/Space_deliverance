@@ -19,8 +19,8 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
     public event EventHandler SavingStarted;
     public event EventHandler SavingCompleted;
 
-    private readonly Dictionary<string, SavableEntity> _registeredEntities = new();
-    private Dictionary<string, object> _states = new();
+    private readonly HashSet<SavableEntity> _registeredEntities = new();
+    private Dictionary<string, object> _storedStates = new();
 
     private float _savingPeriod = DefaultSavingPeriod;
     public float SavingPeriod => _savingPeriod;
@@ -46,11 +46,11 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
         {
             yield return new WaitForSeconds(SavingPeriod);
 
-            StartCoroutine(SaveDelayed());
+            StartCoroutine(DelayedSave());
         }
     }
 
-    private IEnumerator SaveDelayed()
+    private IEnumerator DelayedSave()
     {
         SavingStartup?.Invoke(this, new SavingStartupEventArgs(SavingDelay));
 
@@ -68,13 +68,13 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
             using var stream = new FileStream(SavePath, FileMode.Open);
 
             var data = (SavableData)serializer.ReadObject(stream);
-            _states = data.Content;
+            _storedStates = data.Content;
         }
     }
 
     public void Save()
     {
-        var data = new SavableData(_states);
+        var data = new SavableData(_storedStates);
         var serializer = new DataContractSerializer(typeof(SavableData));
         using var stream = new FileStream(SavePath, FileMode.OpenOrCreate);
 
@@ -82,25 +82,25 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
         SavingCompleted?.Invoke(this, EventArgs.Empty);
     }
 
-    public void RegisterEntity(string id, SavableEntity entity)
+    public void Register(SavableEntity entity)
     {
-        if (!_registeredEntities.ContainsKey(id))
+        if (!_registeredEntities.Contains(entity))
         {
-            _registeredEntities.Add(id, entity);
+            _registeredEntities.Add(entity);
 
-            if (_states.TryGetValue(id, out var state))
+            if (_storedStates.TryGetValue(entity.ID, out var state))
             {
                 entity.SetState(state);
             }
         }
     }
 
-    public void DeregisterEntity(string id)
+    public void Deregister(SavableEntity entity)
     {
-        if (_registeredEntities.TryGetValue(id, out var entity))
+        if (_registeredEntities.Contains(entity))
         {
-            _states.Add(id, entity.GetState());
-            _registeredEntities.Remove(id);
+            _storedStates[entity.ID] = entity.GetState();
+            _registeredEntities.Remove(entity);
         }
     }
 

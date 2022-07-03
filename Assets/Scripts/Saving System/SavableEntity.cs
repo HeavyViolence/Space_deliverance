@@ -10,7 +10,6 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
     private readonly List<ISavable> _savables = new();
 
     private bool SavingRequired => _savables.Count > 0;
-
     public string ID => _id;
 
     private void Awake()
@@ -29,7 +28,7 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
 
         if (SavingRequired)
         {
-            SavingSystem.Instance.RegisterEntity(_id, this);
+            SavingSystem.Instance.Register(this);
         }
     }
 
@@ -37,7 +36,7 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
     {
         if (SavingRequired)
         {
-            SavingSystem.Instance.DeregisterEntity(_id);
+            SavingSystem.Instance.Deregister(this);
         }
     }
 
@@ -51,7 +50,7 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
 
     public object GetState()
     {
-        var states = new List<object>(_savables.Count);
+        List<object> states = new(_savables.Count);
 
         foreach (var savable in _savables)
         {
@@ -73,13 +72,8 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
 
     public bool Equals(SavableEntity other)
     {
-        if (other == null)
-        {
-            return false;
-        }
-        else
-        {
-            return other.ID.Equals(ID);
-        }
+        if (other == null) return false;
+
+        return other.ID.Equals(ID);
     }
 }

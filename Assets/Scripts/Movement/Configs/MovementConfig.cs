@@ -27,13 +27,25 @@ public class MovementConfig : ScriptableObject
     [SerializeField] private bool _collisionDamageEnabled = false;
     [SerializeField] private float _collisionDamage = DefaultCollisionDamage;
     [SerializeField] private float _collisionDamageRandomness = 0f;
-
+    [SerializeField] private AudioCollection _collisionAudio;
     [SerializeField] private bool _cameraShakeOnCollisionEnabled = false;
 
     public RangedFloat HorizontalSpeed { get; private set; }
     public RangedFloat VerticalSpeed { get; private set; }
-    public float Speed2D => Mathf.Sqrt(HorizontalSpeed.RandomValue * HorizontalSpeed.RandomValue +
-                                       VerticalSpeed.RandomValue * VerticalSpeed.RandomValue);
+    public float Speed2D
+    {
+        get
+        {
+            if (HorizontalSpeed.RandomValue == 0f && VerticalSpeed.RandomValue == 0f) return 0f;
+
+            if (HorizontalSpeed.RandomValue != 0f && VerticalSpeed.RandomValue == 0f) return HorizontalSpeed.RandomValue;
+
+            if (HorizontalSpeed.RandomValue == 0f && VerticalSpeed.RandomValue != 0f) return VerticalSpeed.RandomValue;
+
+            else return Mathf.Sqrt(HorizontalSpeed.RandomValue * HorizontalSpeed.RandomValue +
+                                   VerticalSpeed.RandomValue * VerticalSpeed.RandomValue);
+        }
+    }
 
     public bool CustomMovementBoundsEnabled => _customMovementBoundsEnabled;
     public float LeftBound => _customMovementBoundsEnabled ? CameraHolder.Instance.ScreenLeftBound * _verticalBoundsDisplacementFactor
@@ -47,7 +59,7 @@ public class MovementConfig : ScriptableObject
 
     public bool CollisionDamageEnabled => _collisionDamageEnabled;
     public RangedFloat CollisionDamage { get; private set; }
-
+    public AudioCollection CollisionAudio => _collisionAudio;
     public bool CameraShakeOnCollisionEnabled => _cameraShakeOnCollisionEnabled;
 
     private void OnEnable()

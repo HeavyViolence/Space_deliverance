@@ -18,7 +18,7 @@ public class MovementConfigEditor : Editor
     private SerializedProperty _collisionDamageEnabled;
     private SerializedProperty _collisionDamage;
     private SerializedProperty _collisionDamageRandomness;
-
+    private SerializedProperty _collisionAudio;
     private SerializedProperty _cameraShakeOnCollisionEnabled;
 
     protected virtual void OnEnable()
@@ -37,7 +37,7 @@ public class MovementConfigEditor : Editor
         _collisionDamageEnabled = serializedObject.FindProperty("_collisionDamageEnabled");
         _collisionDamage = serializedObject.FindProperty("_collisionDamage");
         _collisionDamageRandomness = serializedObject.FindProperty("_collisionDamageRandomness");
-
+        _collisionAudio = serializedObject.FindProperty("_collisionAudio");
         _cameraShakeOnCollisionEnabled = serializedObject.FindProperty("_cameraShakeOnCollisionEnabled");
     }
 
@@ -45,45 +45,46 @@ public class MovementConfigEditor : Editor
     {
         serializedObject.Update();
 
-        EditorGUILayout.Slider(_horizontalSpeed, 0f, MovementConfig.MaxSpeed, "Horizontal Speed");
+        EditorGUILayout.Slider(_horizontalSpeed, 0f, MovementConfig.MaxSpeed, "Horizontal speed");
         EditorGUILayout.Slider(_horizontalSpeedRandomness, 0f, 1f, "Randomness");
 
         EditorGUILayout.Separator();
-        EditorGUILayout.Slider(_verticalSpeed, 0f, MovementConfig.MaxSpeed, "Vertical Speed");
+        EditorGUILayout.Slider(_verticalSpeed, 0f, MovementConfig.MaxSpeed, "Vertical speed");
         EditorGUILayout.Slider(_verticalSpeedRandomness, 0f, 1f, "Randomness");
 
         EditorGUILayout.Separator();
-        EditorGUILayout.PropertyField(_customMovementBoundsEnabled, new GUIContent("Enable Custom Movement Bounds"));
+        EditorGUILayout.PropertyField(_customMovementBoundsEnabled, new GUIContent("Enable custom movement bounds"));
 
         if (_customMovementBoundsEnabled.boolValue)
         {
             EditorGUILayout.Slider(_upperBoundDisplacementFactor,
                                    MovementConfig.MinBoundsDisplacementFactor,
                                    MovementConfig.MaxBoundsDisplacementFactor,
-                                   "Upper Bound Displacement Factor");
+                                   "Upper bound displacement factor");
 
             EditorGUILayout.Slider(_lowerBoundDisplacementFactor,
                                    MovementConfig.MinBoundsDisplacementFactor,
                                    MovementConfig.MaxBoundsDisplacementFactor,
-                                   "Lower Bound Displacement Factor");
+                                   "Lower bound displacement factor");
 
             EditorGUILayout.Slider(_verticalBoundsDisplacementFactor,
                                    MovementConfig.MinBoundsDisplacementFactor,
                                    MovementConfig.MaxBoundsDisplacementFactor,
-                                   "Left & Right Bounds Displacement Factor");
+                                   "Left & right bounds displacement factor");
         }
 
         EditorGUILayout.Separator();
-        EditorGUILayout.PropertyField(_collisionDamageEnabled, new GUIContent("Enable Collision Damage"));
+        EditorGUILayout.PropertyField(_collisionDamageEnabled, new GUIContent("Enable collision damage"));
 
         if (_collisionDamageEnabled.boolValue)
         {
             EditorGUILayout.Slider(_collisionDamage, MovementConfig.MinCollisionDamage, MovementConfig.MaxCollisionDamage, "Damage");
             EditorGUILayout.Slider(_collisionDamageRandomness, 0f, 1f, "Randomness");
-        }
 
-        EditorGUILayout.Separator();
-        EditorGUILayout.PropertyField(_cameraShakeOnCollisionEnabled, new GUIContent("Enable Camera Shake On Collision"));
+            EditorGUILayout.PropertyField(_collisionAudio, new GUIContent("Collision audio"));
+
+            EditorGUILayout.PropertyField(_cameraShakeOnCollisionEnabled, new GUIContent("Enable camera shake on collision"));
+        }
 
         serializedObject.ApplyModifiedProperties();
     }
