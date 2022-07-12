@@ -67,3 +67,22 @@ SavingSystem.Deregister() cannot record a newly captured state of a SavableEntit
 Functionality expanded:
 
 MovementConfig
+
+0.1.0005.0:
+
+Improvements:
+
+Unnecessary SavableData data shell is removed from SavingSystem
+SavingSystem behaviour improved
+SavableEntity behaviour improved
+Build type changed to WebGL
+
+Bug fixes:
+
+SavableEntity didn't have a proper implementation of GetHashCode()
+
+Imported:
+
+Music
+Weapons audio effects
+Misc audio effect

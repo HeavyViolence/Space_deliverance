@@ -8,8 +8,10 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
     [SerializeField] private string _id;
 
     private readonly List<ISavable> _savables = new();
+    private bool _registered = false;
 
     private bool SavingRequired => _savables.Count > 0;
+
     public string ID => _id;
 
     private void Awake()
@@ -22,22 +24,9 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
         StartCoroutine(RegisterItself());
     }
 
-    private IEnumerator RegisterItself()
-    {
-        yield return SavingSystem.Instance != null;
-
-        if (SavingRequired)
-        {
-            SavingSystem.Instance.Register(this);
-        }
-    }
-
     private void OnDisable()
     {
-        if (SavingRequired)
-        {
-            SavingSystem.Instance.Deregister(this);
-        }
+        DeregisterItself();
     }
 
     private void FindSavableComponents()
@@ -45,6 +34,24 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
         foreach (var savable in transform.root.gameObject.GetComponentsInChildren<ISavable>())
         {
             _savables.Add(savable);
+        }
+    }
+
+    private IEnumerator RegisterItself()
+    {
+        yield return SavingSystem.Instance != null;
+
+        if (SavingRequired)
+        {
+            _registered = SavingSystem.Instance.Register(this);
+        }
+    }
+
+    private void DeregisterItself()
+    {
+        if (_registered)
+        {
+            _registered = !SavingSystem.Instance.Deregister(this);
         }
     }
 
@@ -76,4 +83,8 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
 
         return other.ID.Equals(ID);
     }
+
+    public override int GetHashCode() => ID.GetHashCode();
+
+    public override string ToString() => $"{nameof(SavableEntity)} ID: {ID}";
 }

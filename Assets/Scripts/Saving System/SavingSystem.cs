@@ -7,32 +7,32 @@ using System;
 
 public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 {
-    private const string SaveFileName = "Space deliverance";
-    private const string SaveFileExtension = ".save";
+    private const string SavegameFileName = "Space deliverance";
+    private const string SavegameFileExtension = ".save";
 
-    private const float MinSavingPeriod = 60f;
-    private const float MaxSavingPeriod = 600f;
-    private const float DefaultSavingPeriod = 300f;
-    private const float SavingDelay = 10f;
+    private const float MinSavegamePeriod = 60f;
+    private const float MaxSavegamePeriod = 600f;
+    private const float DefaultSavegamePeriod = 300f;
+    private const float SavegameDelay = 10f;
 
-    public event EventHandler SavingStartup;
-    public event EventHandler SavingStarted;
-    public event EventHandler SavingCompleted;
+    public event EventHandler SavegameAboutToStart;
+    public event EventHandler SavegameStarted;
+    public event EventHandler SavegameCompleted;
 
     private readonly HashSet<SavableEntity> _registeredEntities = new();
     private Dictionary<string, object> _storedStates = new();
 
-    private float _savingPeriod = DefaultSavingPeriod;
-    public float SavingPeriod => _savingPeriod;
+    private string SavegameFileFullName => SavegameFileName + SavegameFileExtension;
+    private string SavegamePath => Path.Combine(Application.persistentDataPath, SavegameFileFullName);
 
-    private string SaveFileFullName => SaveFileName + SaveFileExtension;
-    private string SavePath => Path.Combine(Application.persistentDataPath, SaveFileFullName);
+    public float SavegamePeriod { get; private set; } = DefaultSavegamePeriod;
+    public bool SavegameExists { get; private set; } = false;
 
     protected override void Awake()
     {
         base.Awake();
 
-        TryLoad();
+        SavegameExists = Load();
     }
 
     private void Start()
@@ -44,7 +44,7 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
     {
         while (true)
         {
-            yield return new WaitForSeconds(SavingPeriod);
+            yield return new WaitForSeconds(SavegamePeriod);
 
             StartCoroutine(DelayedSave());
         }
@@ -52,37 +52,39 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 
     private IEnumerator DelayedSave()
     {
-        SavingStartup?.Invoke(this, new SavingStartupEventArgs(SavingDelay));
+        SavegameAboutToStart?.Invoke(this, new SavingStartupEventArgs(SavegameDelay));
 
-        yield return new WaitForSecondsRealtime(SavingDelay);
+        yield return new WaitForSecondsRealtime(SavegameDelay);
 
-        SavingStarted?.Invoke(this, EventArgs.Empty);
+        SavegameStarted?.Invoke(this, EventArgs.Empty);
         Save();
-    }
-
-    private void TryLoad()
-    {
-        if (Directory.Exists(SavePath))
-        {
-            var serializer = new DataContractSerializer(typeof(SavableData));
-            using var stream = new FileStream(SavePath, FileMode.Open);
-
-            var data = (SavableData)serializer.ReadObject(stream);
-            _storedStates = data.Content;
-        }
     }
 
     public void Save()
     {
-        var data = new SavableData(_storedStates);
-        var serializer = new DataContractSerializer(typeof(SavableData));
-        using var stream = new FileStream(SavePath, FileMode.OpenOrCreate);
+        DataContractSerializer serializer = new(typeof(KeyValuePair<string, object>));
+        using FileStream stream = new(SavegamePath, FileMode.OpenOrCreate);
 
-        serializer.WriteObject(stream, data);
-        SavingCompleted?.Invoke(this, EventArgs.Empty);
+        serializer.WriteObject(stream, _storedStates);
+        SavegameCompleted?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Register(SavableEntity entity)
+    private bool Load()
+    {
+        if (Directory.Exists(SavegamePath))
+        {
+            DataContractSerializer serializer = new(typeof(KeyValuePair<string, object>));
+            using FileStream stream = new(SavegamePath, FileMode.Open);
+
+            _storedStates = (Dictionary<string, object>)serializer.ReadObject(stream);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool Register(SavableEntity entity)
     {
         if (!_registeredEntities.Contains(entity))
         {
@@ -92,23 +94,31 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
             {
                 entity.SetState(state);
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    public void Deregister(SavableEntity entity)
+    public bool Deregister(SavableEntity entity)
     {
         if (_registeredEntities.Contains(entity))
         {
             _storedStates[entity.ID] = entity.GetState();
             _registeredEntities.Remove(entity);
+
+            return true;
         }
+
+        return false;
     }
 
-    public void SetSavingPeriod(float value) => _savingPeriod = Mathf.Clamp(value, MinSavingPeriod, MaxSavingPeriod);
+    public void SetSavingPeriod(float value) => SavegamePeriod = Mathf.Clamp(value, MinSavegamePeriod, MaxSavegamePeriod);
 
-    public void SetDefaultSavingPeriod() => SetSavingPeriod(DefaultSavingPeriod);
+    public void SetDefaultSavingPeriod() => SetSavingPeriod(DefaultSavegamePeriod);
 
-    public object CaptureState() => _savingPeriod;
+    public object CaptureState() => SavegamePeriod;
 
     public void RestoreState(object state)
     {
@@ -122,6 +132,6 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
             throw new ArgumentException(nameof(state), $"Transmitted object state must be of type {typeof(float)}!");
         }
 
-        _savingPeriod = (float)state;
+        SavegamePeriod = (float)state;
     }
 }
