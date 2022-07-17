@@ -91,7 +91,7 @@ public sealed class AudioPlayer : GlobalInstance<AudioPlayer>, ISavable
         source.bypassListenerEffects = false;
         source.bypassReverbZones = false;
         source.loop = false;
-        source.priority = (int)AuxMath.RangeRemap(properties.Priority, 0, byte.MaxValue, byte.MaxValue, 0);
+        source.priority = (int)AuxMath.Remap(properties.Priority, 0, byte.MaxValue, byte.MaxValue, 0);
         source.volume = properties.Volume1MeterAway;
         source.spatialBlend = properties.SpatialBlend;
         source.pitch = properties.Pitch;
@@ -225,15 +225,25 @@ public sealed class AudioPlayer : GlobalInstance<AudioPlayer>, ISavable
 
     public void RestoreState(object state)
     {
-        var data = (AudioPlayerSavableData)state;
+        if (state == null)
+        {
+            throw new ArgumentNullException(nameof(state), "Passed state is null!");
+        }
 
-        SetMasterVolume(data.MasterVolume);
-        SetMusicVolume(data.MusicVolume);
-        SetShootingVolume(data.ShootingVolume);
-        SetExplosionsVolume(data.ExplosionsVolume);
-        SetInterfaceVolume(data.InterfaceVolume);
-        SetBackgroundVolume(data.BackgroundVolume);
-        SetNotificationsVolume(data.NotificationsVolume);
-        SetInteractionsVolume(data.InteractionsVolume);
+        if (state is AudioPlayerSavableData value)
+        {
+            SetMasterVolume(value.MasterVolume);
+            SetMusicVolume(value.MusicVolume);
+            SetShootingVolume(value.ShootingVolume);
+            SetExplosionsVolume(value.ExplosionsVolume);
+            SetInterfaceVolume(value.InterfaceVolume);
+            SetBackgroundVolume(value.BackgroundVolume);
+            SetNotificationsVolume(value.NotificationsVolume);
+            SetInteractionsVolume(value.InteractionsVolume);
+        }
+        else
+        {
+            throw new ArgumentException($"Passed state must be of a {typeof(AudioPlayerSavableData)} type!", nameof(state));
+        }
     }
 }

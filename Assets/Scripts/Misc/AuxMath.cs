@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
 using UnityEngine;
+using System.Text;
 
 public static class AuxMath
 {
@@ -11,7 +14,7 @@ public static class AuxMath
 
     public static bool RandomBool => RandomSign > 0f;
 
-    public static float RangeRemap(float value, float oldMin, float oldMax, float newMin, float newMax)
+    public static float Remap(float value, float oldMin, float oldMax, float newMin, float newMax)
     {
         float clampedValue = Mathf.Clamp(value, oldMin, oldMax);
         float lerpfactor = Mathf.InverseLerp(oldMin, oldMax, clampedValue);
@@ -39,5 +42,41 @@ public static class AuxMath
         int randomIndex = Random.Range(0, availableIntegers.Count);
 
         return availableIntegers[randomIndex];
+    }
+
+    public static string SerializeObject(object obj)
+    {
+        using MemoryStream memoryStream = new();
+        using StreamReader reader = new(memoryStream);
+        DataContractSerializer serializer = new(obj.GetType());
+
+        serializer.WriteObject(memoryStream, obj);
+        memoryStream.Position = 0;
+
+        return reader.ReadToEnd();
+    }
+
+    public static T DeserializeObject<T>(string xml)
+    {
+        using MemoryStream memoryStream = new();
+        byte[] data = Encoding.UTF8.GetBytes(xml);
+        DataContractSerializer deserializer = new(typeof(T));
+
+        memoryStream.Write(data, 0, data.Length);
+        memoryStream.Position = 0;
+
+        return (T)deserializer.ReadObject(memoryStream);
+    }
+
+    public static string EncodeOrDecode(string value, string key)
+    {
+        StringBuilder builder = new(value.Length);
+
+        for (int i = 0; i < value.Length; i++)
+        {
+            builder.Append(value[i] ^ key[i % key.Length]);
+        }
+
+        return builder.ToString();
     }
 }

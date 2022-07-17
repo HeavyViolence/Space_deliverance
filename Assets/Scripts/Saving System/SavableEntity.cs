@@ -69,6 +69,11 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
 
     public void SetState(object state)
     {
+        if (state == null)
+        {
+            throw new ArgumentNullException(nameof(state), "Attempted to set an invalid state!");
+        }
+
         var capturedStates = (List<object>)state;
 
         for (int i = 0; i < _savables.Count; i++)

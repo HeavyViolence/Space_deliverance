@@ -86,3 +86,29 @@ Imported:
 Music
 Weapons audio effects
 Misc audio effect
+
+0.1.0006.0:
+
+Implemented:
+
+MusicPlayer
+PlayerControls
+Movement
+DamageDealer
+IDamageable
+IDestroyable
+IMovementBehaviourSwitch
+HitEventArgs
+DamageReceivedEventArgs
+DestroyedEventArgs
+
+Functionality expanded:
+
+AuxMath
+SavingSystem
+
+Bug fixes:
+
+AudioPlayerSavableData cannot be serialized
+SavingSystem cannot save any data if savable entities do not deregister itself
+SavableEntity was able to accept an invalid state

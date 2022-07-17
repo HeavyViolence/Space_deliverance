@@ -1,16 +1,31 @@
-using System;
+using System.Runtime.Serialization;
 
-[Serializable]
+[DataContract]
 public sealed class AudioPlayerSavableData
 {
-    public float MasterVolume { get; }
-    public float MusicVolume { get; }
-    public float ShootingVolume { get; }
-    public float ExplosionsVolume { get; }
-    public float InterfaceVolume { get; }
-    public float BackgroundVolume { get; }
-    public float NotificationsVolume { get; }
-    public float InteractionsVolume { get; }
+    [DataMember]
+    public float MasterVolume { get; private set; }
+
+    [DataMember]
+    public float MusicVolume { get; private set; }
+
+    [DataMember]
+    public float ShootingVolume { get; private set; }
+
+    [DataMember]
+    public float ExplosionsVolume { get; private set; }
+
+    [DataMember]
+    public float InterfaceVolume { get; private set; }
+
+    [DataMember]
+    public float BackgroundVolume { get; private set; }
+
+    [DataMember]
+    public float NotificationsVolume { get; private set; }
+
+    [DataMember]
+    public float InteractionsVolume { get; private set; }
 
     public AudioPlayerSavableData(float masterVolume,
                                   float musicVolume,
