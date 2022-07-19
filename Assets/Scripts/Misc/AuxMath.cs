@@ -3,6 +3,8 @@ using System.IO;
 using System.Runtime.Serialization;
 using UnityEngine;
 using System.Text;
+using System;
+using System.Security.Cryptography;
 
 public static class AuxMath
 {
@@ -10,7 +12,7 @@ public static class AuxMath
     public const float Phi = 1.618_033_988f;
     public const float SquareRootOf2 = 1.414_213_562f;
 
-    public static float RandomSign => Random.Range(-1f, 1f) < 0f ? -1f : 1f;
+    public static float RandomSign => UnityEngine.Random.Range(-1f, 1f) < 0f ? -1f : 1f;
 
     public static bool RandomBool => RandomSign > 0f;
 
@@ -39,15 +41,15 @@ public static class AuxMath
             availableIntegers.Add(i);
         }
 
-        int randomIndex = Random.Range(0, availableIntegers.Count);
+        int randomIndex = UnityEngine.Random.Range(0, availableIntegers.Count);
 
         return availableIntegers[randomIndex];
     }
 
-    public static string SerializeObject(object obj)
+    public static string SerializeObjectToString(object obj)
     {
         using MemoryStream memoryStream = new();
-        using StreamReader reader = new(memoryStream);
+        using StreamReader reader = new(memoryStream, Encoding.UTF8);
         DataContractSerializer serializer = new(obj.GetType());
 
         serializer.WriteObject(memoryStream, obj);
@@ -56,16 +58,23 @@ public static class AuxMath
         return reader.ReadToEnd();
     }
 
-    public static T DeserializeObject<T>(string xml)
+    public static T DeserializeStringToObject<T>(string objectAsXml, IEnumerable<Type> knownTypes)
     {
         using MemoryStream memoryStream = new();
-        byte[] data = Encoding.UTF8.GetBytes(xml);
-        DataContractSerializer deserializer = new(typeof(T));
+        byte[] xmlAsBytes = Encoding.UTF8.GetBytes(objectAsXml);
+        DataContractSerializer deserializer = new(typeof(T), knownTypes);
 
-        memoryStream.Write(data, 0, data.Length);
+        memoryStream.Write(xmlAsBytes, 0, xmlAsBytes.Length);
         memoryStream.Position = 0;
-
-        return (T)deserializer.ReadObject(memoryStream);
+        
+        if (deserializer.ReadObject(memoryStream) is T value)
+        {
+            return value;
+        }
+        else
+        {
+            throw new Exception("Passed data is invalid or corrupted and cannot be properly restored!");
+        }
     }
 
     public static string EncodeOrDecode(string value, string key)
@@ -74,9 +83,59 @@ public static class AuxMath
 
         for (int i = 0; i < value.Length; i++)
         {
-            builder.Append(value[i] ^ key[i % key.Length]);
+            builder.Append((char)(value[i] ^ key[i % key.Length]));
         }
 
         return builder.ToString();
+    }
+
+    public static string Encode(string input, string publicKey, string privateKey)
+    {
+        try
+        {
+            byte[] inputAsBytes = Encoding.UTF8.GetBytes(input);
+            byte[] publicKeyAsBytes = Encoding.UTF8.GetBytes(publicKey);
+            byte[] privateKeyAsBytes = Encoding.UTF8.GetBytes(privateKey);
+
+            using DESCryptoServiceProvider cryptoServiceProvider = new();
+            using MemoryStream memoryStream = new();
+            using CryptoStream cryptoStream = new(memoryStream,
+                                                  cryptoServiceProvider.CreateEncryptor(publicKeyAsBytes, privateKeyAsBytes),
+                                                  CryptoStreamMode.Write);
+
+            cryptoStream.Write(inputAsBytes, 0, inputAsBytes.Length);
+            cryptoStream.Close();
+
+            return Convert.ToBase64String(memoryStream.ToArray());
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+    }
+
+    public static string Decode(string encodedInput, string publicKey, string privateKey)
+    {
+        try
+        {
+            byte[] encodedInputAsBytes = Convert.FromBase64String(encodedInput);
+            byte[] publicKeyAsBytes = Encoding.UTF8.GetBytes(publicKey);
+            byte[] privateKeyAsBytes = Encoding.UTF8.GetBytes(privateKey);
+
+            using DESCryptoServiceProvider cryptoServiceProvider = new();
+            using MemoryStream memoryStream = new();
+            using CryptoStream cryptoStream = new(memoryStream,
+                                                  cryptoServiceProvider.CreateDecryptor(publicKeyAsBytes, privateKeyAsBytes),
+                                                  CryptoStreamMode.Write);
+
+            cryptoStream.Write(encodedInputAsBytes, 0, encodedInputAsBytes.Length);
+            cryptoStream.Close();
+
+            return Encoding.UTF8.GetString(memoryStream.ToArray());
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
     }
 }

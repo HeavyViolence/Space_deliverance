@@ -203,11 +203,11 @@ AudioMixerController:
   - guid: 2dbdac4d3d0491343b7e637324bc59f5
     name: Background Volume
   - guid: 2a19d51064b00184782df12b32b28e52
-    name: Interface Volume
+    name: Explosions Volume
   - guid: 4e32dd2fbc027ab4589b89c8d4f32091
     name: Interactions Volume
   - guid: f72a70c5ae184c643a0d6d88dc0bbe43
-    name: MyExposedParam
+    name: Interface Volume
   - guid: 9924c40345723f946b5d352c1ddd882a
     name: Master Volume
   - guid: c1307f1bac313394c934c926ab5f47e7

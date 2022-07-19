@@ -55,7 +55,7 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
         }
     }
 
-    public object GetState()
+    public IEnumerable<object> GetState()
     {
         List<object> states = new(_savables.Count);
 
@@ -67,18 +67,18 @@ public sealed class SavableEntity : MonoBehaviour, IEquatable<SavableEntity>
         return states;
     }
 
-    public void SetState(object state)
+    public void SetState(IEnumerable<object> state)
     {
         if (state == null)
         {
             throw new ArgumentNullException(nameof(state), "Attempted to set an invalid state!");
         }
 
-        var capturedStates = (List<object>)state;
+        int counter = 0;
 
-        for (int i = 0; i < _savables.Count; i++)
+        foreach (var element in state)
         {
-            _savables[i].RestoreState(capturedStates[i]);
+            _savables[counter++].RestoreState(element);
         }
     }
 

@@ -112,3 +112,20 @@ Bug fixes:
 AudioPlayerSavableData cannot be serialized
 SavingSystem cannot save any data if savable entities do not deregister itself
 SavableEntity was able to accept an invalid state
+
+0.1.0007.0:
+
+Implemented:
+
+SavegameLoadingFailedEventArgs
+AuxMath.Encode()
+AuxMath.Decode()
+
+Bug fixes:
+
+AuxMath.DeserializeObject() crash on corrupted data deserialization attempt
+AuxMath.EncodeOrDecode() returns invalid format
+SavingSystem crash on corrupted savegame loading attempt
+SavingSystem cannot access savegame file directory
+SavableEntity.SetState() cannot properly distinguish between many objects being pass as a single boxed object
+Save data encoding changed from simple charXOR to DES-based for much more stability and fault tolerance

@@ -8,30 +8,36 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 {
     private const string SavegameFileName = "Space deliverance";
     private const string SavegameFileExtension = ".save";
-    private const string EncryptionKey = "qpr7oT>(4;8].u=p12*_c";
+    private const string PublicKey = "Ldr7uh20";
+    private const string PrivateKey = "xmjG8i13";
 
     private const float MinSavegamePeriod = 60f;
     private const float MaxSavegamePeriod = 600f;
     private const float DefaultSavegamePeriod = 300f;
     private const float SavegameDelay = 10f;
 
+    private readonly Type[] _knownSavableTypes = { typeof(object[]),
+                                                   typeof(AudioPlayerSavableData) };
+
     public event EventHandler SavegameAboutToStart;
     public event EventHandler SavegameCompleted;
+    public event EventHandler<SavegameLoadFailedEventArgs> SavegameLoadFailed;
+    public event EventHandler SavegameLoadSuccesful;
 
     private readonly HashSet<SavableEntity> _registeredEntities = new();
-    private Dictionary<string, object> _storedStates = new();
+    private Dictionary<string, IEnumerable<object>> _storedStates = new();
 
     private string SavegameFileFullName => SavegameFileName + SavegameFileExtension;
     private string SavegamePath => Path.Combine(Application.persistentDataPath, SavegameFileFullName);
 
     public float SavegamePeriod { get; private set; } = DefaultSavegamePeriod;
-    public bool SavegameExists { get; private set; } = false;
+    public bool SavegameLoaded { get; private set; } = false;
 
     protected override void Awake()
     {
         base.Awake();
 
-        SavegameExists = Load();
+        SavegameLoaded = Load();
     }
 
     private void Start()
@@ -45,17 +51,12 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
         {
             yield return new WaitForSeconds(SavegamePeriod);
 
-            StartCoroutine(DelayedSave());
+            SavegameAboutToStart?.Invoke(this, new SavegameAboutToStartEventArgs(SavegameDelay));
+
+            yield return new WaitForSeconds(SavegameDelay);
+
+            Save();
         }
-    }
-
-    private IEnumerator DelayedSave()
-    {
-        SavegameAboutToStart?.Invoke(this, new SavingStartupEventArgs(SavegameDelay));
-
-        yield return new WaitForSecondsRealtime(SavegameDelay);
-
-        Save();
     }
 
     public void Save()
@@ -64,8 +65,8 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 
         using StreamWriter writer = new(SavegamePath);
 
-        string rawData = AuxMath.SerializeObject(_storedStates);
-        string encodedData = AuxMath.EncodeOrDecode(rawData, EncryptionKey);
+        string rawData = AuxMath.SerializeObjectToString(_storedStates);
+        string encodedData = AuxMath.Encode(rawData, PublicKey, PrivateKey);
 
         writer.Write(encodedData);
         writer.Close();
@@ -75,16 +76,26 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 
     private bool Load()
     {
-        if (Directory.Exists(SavegamePath))
+        if (File.Exists(SavegamePath))
         {
-            using StreamReader reader = new(SavegamePath);
+            try
+            {
+                using StreamReader reader = new(SavegamePath);
 
-            string encodedData = reader.ReadToEnd();
-            string decodedData = AuxMath.EncodeOrDecode(encodedData, EncryptionKey);
+                string encodedData = reader.ReadToEnd();
+                string decodedData = AuxMath.Decode(encodedData, PublicKey, PrivateKey);
 
-            _storedStates = AuxMath.DeserializeObject<Dictionary<string, object>>(decodedData);
+                _storedStates = AuxMath.DeserializeStringToObject<Dictionary<string, IEnumerable<object>>>(decodedData, _knownSavableTypes);
+                SavegameLoadSuccesful?.Invoke(this, EventArgs.Empty);
 
-            return true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                SavegameLoadFailed?.Invoke(this, new SavegameLoadFailedEventArgs(e.Message));
+
+                return false;
+            }
         }
 
         return false;
