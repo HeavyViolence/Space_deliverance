@@ -103,8 +103,8 @@ public sealed class AudioPlayer : GlobalInstance<AudioPlayer>, ISavable
 
         var id = Guid.NewGuid();
         var access = new AudioAccess(id, properties.Clip.length);
-        _activeAudioSources.Add(id, source);
 
+        _activeAudioSources.Add(id, source);
         StartCoroutine(WaitToDisableActiveAudioSource(access));
 
         return access;

@@ -21,8 +21,6 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
 
     public event EventHandler SavegameAboutToStart;
     public event EventHandler SavegameCompleted;
-    public event EventHandler<SavegameLoadFailedEventArgs> SavegameLoadFailed;
-    public event EventHandler SavegameLoadSuccesful;
 
     private readonly HashSet<SavableEntity> _registeredEntities = new();
     private Dictionary<string, IEnumerable<object>> _storedStates = new();
@@ -86,14 +84,11 @@ public sealed class SavingSystem : GlobalInstance<SavingSystem>, ISavable
                 string decodedData = AuxMath.Decode(encodedData, PublicKey, PrivateKey);
 
                 _storedStates = AuxMath.DeserializeStringToObject<Dictionary<string, IEnumerable<object>>>(decodedData, _knownSavableTypes);
-                SavegameLoadSuccesful?.Invoke(this, EventArgs.Empty);
 
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                SavegameLoadFailed?.Invoke(this, new SavegameLoadFailedEventArgs(e.Message));
-
                 return false;
             }
         }

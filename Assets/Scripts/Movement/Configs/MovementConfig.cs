@@ -5,7 +5,7 @@ public class MovementConfig : ScriptableObject
 {
     public const float MaxSpeed = 20f;
 
-    public const float MinBoundsDisplacementFactor = 0.5f;
+    public const float MinBoundsDisplacementFactor = 0f;
     public const float MaxBoundsDisplacementFactor = 2f;
     public const float DefaultBoundDisplacementFactor = 1f;
 

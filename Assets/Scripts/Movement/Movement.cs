@@ -20,7 +20,7 @@ public abstract class Movement : MonoBehaviour
         SetupRigidbody2D();
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         if (Config.CollisionDamageEnabled)
         {
@@ -28,7 +28,7 @@ public abstract class Movement : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         if (Config.CollisionDamageEnabled)
         {
@@ -55,5 +55,10 @@ public abstract class Movement : MonoBehaviour
     {
         e.DamageReceiver.ApplyDamage(Config.CollisionDamage.RandomValue);
         Config.CollisionAudio.PlayRandomAudioClip(e.HitPosition);
+
+        if (Config.CameraShakeOnCollisionEnabled)
+        {
+            CameraShaker.Instance.ShakeOnCollision();
+        }
     }
 }
